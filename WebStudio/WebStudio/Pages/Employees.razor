@@ -1,0 +1,112 @@
+﻿@page "/employees"
+@inject EmployeesService _handler
+
+<Modal @ref=_editModal>
+    <ModalContent Centered>
+        <ModalTitle Margin=Margin.Is3>Сотрудник</ModalTitle>
+        <ModalBody>
+            <Field>
+                <FieldLabel>
+                    ФИО
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="ФИО" @bind-Text="_editable.Name"/>
+                </FieldBody>
+            </Field>
+            <Field>
+                <FieldLabel>
+                    Должность
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="Должность" @bind-Text="_editable.Post"/>
+                </FieldBody>
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Clicked=CloseEditModal Color=Color.Success>Сохранить</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<Button Clicked="Add" Margin=Margin.Is3 Block Color=Color.Success>Добавить сотрудника</Button>
+
+@if (_employees != null)
+{
+    @if (_employees.Any())
+    {
+        @foreach (var employee in _employees)
+        {
+            <Card>
+                <CardHeader>@employee.Name</CardHeader>
+                <CardSubtitle Margin=Margin.Is2>@employee.Post</CardSubtitle>
+                <CardFooter>
+                    <Button Color=Color.Warning Clicked="()=>OpenEditModal(employee)">
+                        <Icon Name=IconName.Edit />
+                    </Button>
+                    <Button Color=Color.Danger Clicked="()=>Delete(employee)">
+                        <Icon Name=IconName.Delete />
+                    </Button>
+                </CardFooter>
+            </Card>
+        }
+    }
+    else
+    {
+        <Alert Color=Color.Warning>Список сотрудников пуст!</Alert>
+    }
+}
+else
+{
+    <Alert Color=Color.Info>Загрузка...</Alert>
+}
+
+@code
+{
+    private Modal _editModal;
+    private List<Employee> _employees;
+    private Employee _editable = new Employee();
+
+    protected override void OnInitialized()
+    {
+        LoadAll();
+    }
+
+    private void LoadAll()
+    {
+        _employees = _handler.GetAll();
+    }
+
+    public void Add()
+    {
+        _handler.Insert(new Employee
+            {
+                Name = "Иван Иванов",
+                Post = "Рядовой программист"
+            });
+        LoadAll();
+    }
+
+    public void Delete(Employee employee)
+    {
+        _handler.Delete(employee.Id);
+        LoadAll();
+    }
+
+    public void OpenEditModal(Employee employee)
+    {
+        _editable = employee;
+        _editModal.Show();
+    }
+
+    public void CloseEditModal()
+    {
+        InvokeAsync(() => _editModal.Close(CloseReason.UserClosing));
+        SaveChanges();
+    }
+
+    public void SaveChanges()
+    {
+        _handler.Update(_editable);
+        LoadAll();
+    }
+}

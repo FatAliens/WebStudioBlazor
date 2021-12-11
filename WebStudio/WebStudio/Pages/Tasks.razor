@@ -1,0 +1,158 @@
+﻿@page "/tasks"
+@inject ProjectTasksService _handler
+
+<Modal @ref=_editModal>
+    <ModalContent Centered>
+        <ModalTitle Margin=Margin.Is3>Задача</ModalTitle>
+        <ModalBody>
+            <Field>
+                <FieldLabel>
+                    Название
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="Название" @bind-Text="_editable.Title" />
+                </FieldBody>
+            </Field>
+            <Field>
+                <FieldLabel>
+                    Описание
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="Описание" @bind-Text="_editable.Description" />
+                </FieldBody>
+            </Field>
+            <Field>
+                <FieldLabel>
+                    Дата начала
+                </FieldLabel>
+                <FieldBody>
+                    <DatePicker Placeholder="Дата начала" TValue=DateTime @bind-Date="_editable.StartDate" />
+                </FieldBody>
+            </Field>
+            <Field>
+                <FieldLabel>
+                    Дата окончания
+                </FieldLabel>
+                <FieldBody>
+                    <DatePicker Placeholder="Дата окончания" TValue=DateTime @bind-Date="_editable.EndDate" />
+                </FieldBody>
+            </Field>
+            <Field>
+                <FieldLabel>
+                    Стоимость
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="Стоимость" @bind-Text="_editable.PriceString" MaskType=MaskType.Numeric/>
+                </FieldBody>
+            </Field>
+            <Field Horizontal Margin=Margin.Is2.OnX>
+                <FieldLabel>
+                    Закончен &nbsp;
+                </FieldLabel>
+                <FieldBody>
+                    <Check TValue=bool @bind-Checked="_editable.Completed" Size=Size.Large />
+                </FieldBody>
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Clicked=CloseEditModal Color=Color.Success>Сохранить</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<Button Clicked="Add" Margin=Margin.Is3 Block Color=Color.Success>Добавить задачу</Button>
+
+@if (_tasks != null)
+{
+    @if (_tasks.Any())
+    {
+        @foreach (var task in _tasks)
+        {
+            <Card>
+                <CardHeader>
+                    @task.Title
+                </CardHeader>
+                <CardBody>@task.Description</CardBody>
+                <CardSubtitle Margin=Margin.Is2>
+                    <CardSubtitle Margin=Margin.Is2 Flex=Flex.JustifyContent.Between>
+                    <Text>@task.StartDate.ToShortDateString() - @task.EndDate.ToShortDateString()</Text>
+                    <Text>@(task.Completed ? "Выполнено!" : "Не выполнено!")</Text>
+                    <Text Color=TextColor.Success>@(task.Price)$</Text>
+                </CardSubtitle>
+                </CardSubtitle>
+                <CardFooter>
+                    <Button Color=Color.Warning Clicked="()=>OpenEditModal(task)">
+                        <Icon Name=IconName.Edit />
+                    </Button>
+                    <Button Color=Color.Danger Clicked="()=>Delete(task)">
+                        <Icon Name=IconName.Delete />
+                    </Button>
+                </CardFooter>
+            </Card>
+        }
+
+    }
+    else
+    {
+        <Alert Color=Color.Warning>Список проектов пуст!</Alert>
+    }
+}
+else
+{
+    <Alert Color=Color.Info>Загрузка...</Alert>
+}
+
+@code
+{
+    private Modal _editModal;
+    private List<ProjectTask> _tasks;
+    private ProjectTask _editable = new ProjectTask();
+
+    protected override void OnInitialized()
+    {
+        LoadAll();
+    }
+
+    private void LoadAll()
+    {
+        _tasks = _handler.GetAll();
+    }
+
+    public void Add()
+    {
+        _handler.Insert(new ProjectTask
+            {
+                Title = "Новая задача",
+                Description = "Описание задания",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddYears(2),
+                Price = 0,
+                Completed = false
+            });
+        LoadAll();
+    }
+
+    public void Delete(ProjectTask projectTask)
+    {
+        _handler.Delete(projectTask.Id);
+        LoadAll();
+    }
+
+    public void OpenEditModal(ProjectTask projectTask)
+    {
+        _editable = projectTask;
+        _editModal.Show();
+    }
+
+    public void CloseEditModal()
+    {
+        InvokeAsync(() => _editModal.Close(CloseReason.UserClosing));
+        SaveChanges();
+    }
+
+    public void SaveChanges()
+    {
+        _handler.Update(_editable);
+        LoadAll();
+    }
+}

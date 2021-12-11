@@ -1,0 +1,113 @@
+﻿@page "/customers"
+@inject CustomersService _handler
+
+<Modal @ref=_editModal>
+    <ModalContent Centered>
+        <ModalTitle Margin=Margin.Is3>Заказчик</ModalTitle>
+        <ModalBody>
+            <Field>
+                <FieldLabel>
+                    Название
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="Название" @bind-Text="_editable.Title"/>
+                </FieldBody>
+            </Field>
+            <Field>
+                <FieldLabel>
+                    Описание
+                </FieldLabel>
+                <FieldBody>
+                    <TextEdit Placeholder="Описание" @bind-Text="_editable.Description"/>
+                </FieldBody>
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Clicked=CloseEditModal Color=Color.Success>Сохранить</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<Button Clicked="Add" Margin=Margin.Is3 Block Color=Color.Success>Добавить заказчика</Button>
+
+@if (_customers != null)
+{
+    @if (_customers.Any())
+    {
+        @foreach (var customer in _customers)
+        {
+            <Card>
+                <CardHeader>@customer.Title</CardHeader>
+                <CardBody>@customer.Description</CardBody>
+                <CardFooter>
+                    <Button Color=Color.Warning Clicked="()=>OpenEditModal(customer)">
+                        <Icon Name=IconName.Edit />
+                    </Button>
+                    <Button Color=Color.Danger Clicked="()=>Delete(customer)">
+                        <Icon Name=IconName.Delete />
+                    </Button>
+                </CardFooter>
+            </Card>
+        }
+
+    }
+    else
+    {
+        <Alert Color=Color.Warning>Список заказчиков пуст!</Alert>
+    }
+}
+else
+{
+    <Alert Color=Color.Info>Загрузка...</Alert>
+}
+
+@code
+{
+    private Modal _editModal;
+    private List<Customer> _customers;
+    private Customer _editable = new Customer();
+
+    protected override void OnInitialized()
+    {
+        LoadAll();
+    }
+
+    private void LoadAll()
+    {
+        _customers = _handler.GetAll();
+    }
+
+    public void Add()
+    {
+        _handler.Insert(new Customer
+            {
+                Title = "Новая компания",
+                Description = "Описание компании"
+            });
+        LoadAll();
+    }
+
+    public void Delete(Customer customer)
+    {
+        _handler.Delete(customer.Id);
+        LoadAll();
+    }
+
+    public void OpenEditModal(Customer customer)
+    {
+        _editable = customer;
+        _editModal.Show();
+    }
+
+    public void CloseEditModal()
+    {
+        InvokeAsync(() => _editModal.Close(CloseReason.UserClosing));
+        SaveChanges();
+    }
+
+    public void SaveChanges()
+    {
+        _handler.Update(_editable);
+        LoadAll();
+    }
+}

@@ -3,10 +3,61 @@
 <Layout Sider="true">
     <LayoutSider>
         <LayoutSiderContent>
-            Sider
+            <Bar Mode="BarMode.VerticalInline"
+                 CollapseMode="BarCollapseMode.Small"
+                 Breakpoint="Breakpoint.Tablet"
+                 NavigationBreakpoint="Breakpoint.Tablet"
+                 ThemeContrast="ThemeContrast.Dark">
+                <BarBrand>
+                    <BarItem>
+                        <BarLink To="/">
+                            <BarIcon IconName="IconName.Code" />
+                            Веб-студия
+                        </BarLink>
+                    </BarItem>
+                </BarBrand>
+                <BarMenu>
+                    <BarStart>
+                        <BarItem>
+                            <BarLink To="/projects">
+                                <BarIcon IconName="IconName.LayerGroup" />
+                                Проекты
+                            </BarLink>
+                        </BarItem>
+                        <BarItem>
+                            <BarLink To="/tasks">
+                                <BarIcon IconName="IconName.CheckDouble" />
+                                Задачи
+                            </BarLink>
+                        </BarItem>
+                        <BarItem>
+                            <BarLink To="/customers">
+                                <BarIcon IconName="IconName.UserTie" />
+                                Заказчики
+                            </BarLink>
+                        </BarItem>
+                        <BarItem>
+                            <BarLink To="/employees">
+                                <BarIcon IconName="IconName.UserCheck" />
+                                Исполнитили
+                            </BarLink>
+                        </BarItem>
+                    </BarStart>
+                    <BarEnd>
+                        <BarItem>
+                            <BarLink To="/">
+                                <BarIcon IconName="IconName.InfoCircle" />
+                                Информация
+                            </BarLink>
+                        </BarItem>
+                    </BarEnd>
+                </BarMenu>
+            </Bar>
         </LayoutSiderContent>
     </LayoutSider>
-    <LayoutContent>
-        @Body
-    </LayoutContent>
+    <Layout>
+        <LayoutContent>
+            <Container Fluid>@Body</Container>
+        </LayoutContent>
+    </Layout>
 </Layout>
